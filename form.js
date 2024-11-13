@@ -1,92 +1,40 @@
-var titulo = document.querySelector(".titulo");
-titulo.textContent = "Isabelle Nutrição";
-
-var pacientes = document.querySelectorAll(".paciente");
-console.log(pacientes);
-
-for(var i = 0; i < 5; i++) {
-  console.log(pacientes[i]);
-  
-  var tdPeso = pacientes[i].querySelector(".info-peso");
-var peso = tdPeso.textContent;
-
-var tdAltura = pacientes[i].querySelector(".info-altura");
-var altura = tdAltura.textContent;
-
-var tdImc = pacientes[i].querySelector(".info-imc");
-
-var pesoEhValido = true;
-var alturaEhValida = true; 
-
-tdImc.textContent = imc;
-
-if (peso < 0 || peso > 600){
-  tdImc.textContent = "peso inválido";
-  pesoEhValido = false;
-  pacientes[i].classList.add("dados-invalidos");
-}
-
-if (altura < 0 || altura > 2.00){
-  tdImc.textcontent = "altura inválida"
-  alturaEhValida = false;
-    pacientes[i].classList.add("dados-invalidos");
-}
-
-if(pesoEhValido && alturaEhValida){
-  var imc = peso / (altura * altura);
-  tdImc.textContent = imc.toFixed(2);
- }
-}
-
-titulo.addEventListener("click", mostraMensagem);
-
-
-var botaoAdicionar = document.querySelector("Adicionar paciente");
+var botaoAdicionar = document.querySelector("#adicionar-paciente");
 botaoAdicionar.addEventListener("click", function(event){
   event.preventDefault();
-  
-  
-  var form = document.querySelector("#form-adiciona");
-  
-  //Extraindo os dados digitando no formulário 
-  
-  var paciente = 
- obtemPacienteDoFormulario(form); 
-  
-  console.log(paciente.peso);
-  
-  //Criando a linha e as celulas da tabela do novo paciente 
-  
-  var pacienteTr = document.createElement("tr");
 
-  var nomeTd = document.createElement("td");
-  var pesoTd = document.createElement("td");
-  var alturaTd = document.createElement("td");
-  var gorduraTd = document.createElement("td");
-  var imcTd = document.createElement("td");
+  var form = document.querySelector("#form-adiciona");
+
+    //Extraindo os dados digitados no formulário
+    var paciente = obtemPacienteDoFormulario(form);
+
+ //Criando a linha e as células da tabela do novo paciente
+  var pacienteTr = montaTr(paciente);
   
-  nomeTd.textContent = nome;
-  pesoTd.textContent = peso;
-  alturaTd.textContent = altura;
-  gorduraTd.textContent = gordura;
-  imcTd.textContent = calculaImc;
+  var erros = validaPaciente(paciente);
   
-  
-  pacienteTr.appendChild(nomeTd);
-  pacienteTr.appendChild(pesoTd);
-  pacienteTr.appendChild(alturaTd);
-  pacienteTr.appendChild(gorduraTd);
-  pacienteTr.appendChild(imcTd);
-  
-  //Aqui adicionamos a linha com todos os seus dados na tabela do "html";
-  
-  var tabela = document.querySelector("#Tabela-pacientes");
-  
+  if (erros.length > 0 ) {
+    exibeErros(erros);
+    return;
+  }
+ 
+  //Aqui adicionamos a linha com todos os seus dados na tabela do "HTML";
+  var tabela = document.querySelector("#tabela-pacientes");
+
   tabela.appendChild(pacienteTr);
+  form.reset();
 });
 
-function obtemPacienteDoFormulario(form){
-  
+function exibeErros(erros) {
+  var ul = document.querySelector("#mensagem-de-erro");
+  erros.forEach(function(erro) {
+    var li = document.createElement("li");
+    li.textContent = erro;
+    ul.appendChild(li);
+  });
+}
+
+function obtemPacienteDoFormulario(form) {
+
   var paciente = {
     nome: form.nome.value,
     peso: form.peso.value,
@@ -94,6 +42,34 @@ function obtemPacienteDoFormulario(form){
     gordura: form.gordura.value,
     imc: calculaImc(form.peso.value, form.altura.value)
   }
-  
   return paciente;
-    }
+}
+
+function montaTr(paciente) {
+  
+  var pacienteTr = document.createElement("tr");
+  pacienteTr.classList.add("paciente");
+  
+  pacienteTr.appendChild(montaTd(paciente.nome, "info-nome"));
+  pacienteTr.appendChild(montaTd(paciente.peso, "info-peso"));
+  pacienteTr.appendChild(montaTd(paciente.altura, "info-altura"));
+  pacienteTr.appendChild(montaTd(paciente.gordura, "info-gordura"));
+  pacienteTr.appendChild(montaTd(paciente.imc, "info-imc"));
+  
+  return pacienteTr;
+}
+
+function montaTd(dado, classe) {
+  var td = document.createElement("td");
+  td.textContent = dado;
+  td.classList.add(classe);
+  return td;
+}
+
+function validaPaciente(paciente) {
+  var erros = [];
+  if (!validaPeso(paciente.peso)){
+    erros.push("Peso inválido!");
+  }
+  return erros; 
+}
